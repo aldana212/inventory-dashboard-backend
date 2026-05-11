@@ -18,15 +18,6 @@ enum MovementType {
   STOCK_ADJUSTMENT // Ajuste manual
 }
 
-// Roles de usuario (control de acceso básico)
-enum UserRole {
-  ADMIN
-  SUPERVISOR
-  EMPLOYEE
-  VIEWER
-  OPERADOR
-}
-
 // Estado del usuario (reemplaza isActive)
 enum UserStatus {
   ACTIVE
@@ -72,12 +63,13 @@ model User {
 
   phone String? // opcional
 
-  roleId  Int
-  roleRel Role?      @relation(fields: [roleId], references: [id])
-  status  UserStatus @default(ACTIVE) // Estado del usuario
+  roleId Int
+  role   Role @relation(fields: [roleId], references: [id])
 
-  companyId Int // Empresa a la que pertenece
-  company   Company @relation(fields: [companyId], references: [id])
+  status UserStatus @default(ACTIVE) // Estado del usuario
+
+  companyId Int? // Empresa a la que pertenece
+  company   Company? @relation(fields: [companyId], references: [id])
 
   movements    Movement[] // Movimientos creados por el usuario
   activityLogs ActivityLog[] // Registro de acciones
@@ -90,6 +82,7 @@ model User {
   updatedAt DateTime @updatedAt // Última actualización automática
 
   @@index([companyId]) // Optimiza consultas por empresa
+  @@index([roleId])
 }
 
 //////////////////////
@@ -222,7 +215,7 @@ model TransactionDetail {
 
   quantity Decimal @db.Decimal(10, 2) // Cantidad movida
 
-  unitCost Decimal @db.Decimal(10, 2) // Costo en ese momento
+  unitCost  Decimal @db.Decimal(10, 2) // Costo en ese momento
   unitPrice Decimal @db.Decimal(10, 2) // precio venta histórico
 
   stockBefore Decimal @db.Decimal(10, 2) // Stock antes del movimiento

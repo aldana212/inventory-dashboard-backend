@@ -1,7 +1,7 @@
 import prisma from "../../config/db.js";
 import bcrypt from "bcrypt";
 
-export const getAll = async (companyId, id, page, limit) => {
+export const getAll = async ({ companyId, id, page, limit }) => {
   const [data, total] = await Promise.all([
     prisma.User.findMany({
       where: {
@@ -14,7 +14,7 @@ export const getAll = async (companyId, id, page, limit) => {
         password: true, // Esta columna se excluye
       },
       include: {
-        roleRel: true,
+        role: true,
       },
     }),
     prisma.User.count({
@@ -64,7 +64,7 @@ export const getStats = async (companyId) => {
     const administrators = await tx.User.count({
       where: {
         companyId,
-        roleRel: {
+        role: {
           name: "ADMIN", // Filtra por el campo 'name' dentro de la relación 'role'
         },
       },
@@ -86,7 +86,7 @@ export const getById = async (id) => {
       password: true, // Esta columna se excluye
     },
     include: {
-      roleRel: true,
+      role: true,
     },
   });
 };
@@ -95,7 +95,23 @@ export const findUser = async (where) => {
   return await prisma.User.findUnique({
     where,
     include: {
-      roleRel: true,
+      role: true,
+    },
+  });
+};
+
+export const findByEmail = async (email) => {
+  return prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+};
+
+export const findRoleByName = async (id) => {
+  return prisma.Role.findUnique({
+    where: {
+      id,
     },
   });
 };

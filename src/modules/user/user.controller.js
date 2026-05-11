@@ -8,7 +8,7 @@ export const getAll = async (req, res, next) => {
     const page = Number(req.query?.page) || 1;
     const limit = Number(req.query?.limit) || 10;
 
-    const data = await service.getAll(companyId, id, page, limit);
+    const data = await service.getAll({ companyId, id, page, limit });
     res.json(data);
   } catch (error) {
     console.log(error);
@@ -39,28 +39,11 @@ export const getById = async (req, res, next) => {
   }
 };
 
-export const login = async (req, res, next) => {
-  try {
-    const email = req.body.email;
-    const password = req.body.password;
-
-    const data = await service.login({
-      email,
-      password,
-    });
-
-    res.json(data);
-  } catch (error) {
-    console.log(error);
-    next(error);
-  }
-};
-
-export const signup = async (req, res, next) => {
+export const create = async (req, res, next) => {
   try {
     const companyId = req?.user?.companyId || 1;
 
-    const data = await service.signup({
+    const data = await service.create({
       firstName: req.body?.firstName,
       lastName: req.body?.lastName,
       email: req.body?.email,
@@ -82,7 +65,7 @@ export const update = async (req, res, next) => {
   try {
     const { id } = req.params;
     const user = req?.user || {};
-    const data = await service.update(Number(id), req.body, user);
+    const data = await service.update(req.body, user);
     res.json(data);
   } catch (error) {
     console.log(error);
@@ -101,30 +84,6 @@ export const updateStatus = async (req, res, next) => {
       status,
       user,
     });
-    res.json(data);
-  } catch (error) {
-    console.log(error);
-    next(error);
-  }
-};
-
-export const completePasswordSetup = async (req, res, next) => {
-  try {
-    const id = req?.user?.id;
-
-    const data = await service.completePasswordSetup(Number(id), req.body);
-
-    res.json(data);
-  } catch (error) {
-    console.log(error);
-    next(error);
-  }
-};
-
-export const changePassword = async (req, res, next) => {
-  try {
-    const id = req?.user?.id;
-    const data = await service.changePassword(Number(id), req.body);
     res.json(data);
   } catch (error) {
     console.log(error);

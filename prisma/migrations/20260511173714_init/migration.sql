@@ -2,9 +2,6 @@
 CREATE TYPE "MovementType" AS ENUM ('STOCK_IN', 'STOCK_OUT', 'STOCK_ADJUSTMENT');
 
 -- CreateEnum
-CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'SUPERVISOR', 'EMPLOYEE', 'VIEWER', 'OPERADOR');
-
--- CreateEnum
 CREATE TYPE "UserStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'SUSPENDED', 'TERMINATED');
 
 -- CreateTable
@@ -35,7 +32,7 @@ CREATE TABLE "User" (
     "phone" TEXT,
     "roleId" INTEGER NOT NULL,
     "status" "UserStatus" NOT NULL DEFAULT 'ACTIVE',
-    "companyId" INTEGER NOT NULL,
+    "companyId" INTEGER,
     "brandColor" TEXT,
     "mustChangePassword" BOOLEAN NOT NULL DEFAULT true,
     "lastLogin" TIMESTAMP(3),
@@ -154,6 +151,9 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE INDEX "User_companyId_idx" ON "User"("companyId");
 
 -- CreateIndex
+CREATE INDEX "User_roleId_idx" ON "User"("roleId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Category_companyId_name_key" ON "Category"("companyId", "name");
 
 -- CreateIndex
@@ -205,7 +205,7 @@ CREATE INDEX "ActivityLog_userId_idx" ON "ActivityLog"("userId");
 ALTER TABLE "User" ADD CONSTRAINT "User_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "User" ADD CONSTRAINT "User_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Category" ADD CONSTRAINT "Category_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
