@@ -2,7 +2,9 @@ import prisma from "../../config/db.js";
 import * as repo from "./movement.repository.js";
 import * as repoProduct from "../product/product.repository.js";
 import * as repoCompany from "../company/company.repository.js";
-import { Prisma } from "@prisma/client";
+import pkg from "@prisma/client";
+
+const { Prisma } = pkg;
 
 export const getAll = async (filters) => {
   const { companyId, page, limit, search, date, type } = filters;
