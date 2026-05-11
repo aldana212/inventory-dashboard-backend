@@ -37,6 +37,7 @@ export const create = async ({ companyName, nit, admin }) => {
       lastName: admin.lastName,
 
       email: admin.email,
+      brandColor: "#3B82F6",
 
       password: hashedPassword,
       mustChangePassword: false,

@@ -48,7 +48,7 @@ export const getSummary = async (companyId) => {
     });
 
     return {
-      total: total?._sum?.purchasePrice,
+      total: total?._sum?.purchasePrice ?? 0,
       totalProducts,
       lowStock,
       outStock,

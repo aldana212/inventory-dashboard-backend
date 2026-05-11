@@ -92,7 +92,10 @@ export const update = async (data, user) => {
 
   const roleId = user?.role?.id;
 
-  if (user?.id === id && findUser?.role?.id !== roleId) {
+  console.log(user);
+  console.log(findUser?.role?.id);
+
+  if (user?.id === findUser?.id && findUser?.role?.id !== roleId) {
     throw new AppError("You can't change your own role", 403);
   }
 

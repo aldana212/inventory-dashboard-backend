@@ -63,7 +63,7 @@ export const create = async (req, res, next) => {
 
 export const update = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    // const { id } = req.params;
     const user = req?.user || {};
     const data = await service.update(req.body, user);
     res.json(data);

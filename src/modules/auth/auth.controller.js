@@ -37,6 +37,7 @@ export const completePasswordSetup = async (req, res, next) => {
 export const changePassword = async (req, res, next) => {
   try {
     const id = req?.user?.id;
+    const { currentPassword, newPassword } = req.body;
     const data = await service.changePassword({
       id,
       currentPassword,

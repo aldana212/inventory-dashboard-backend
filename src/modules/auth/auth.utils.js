@@ -18,7 +18,7 @@ export const createAccessToken = (user) => {
 
       email: user.email,
 
-      role: user.role.name,
+      role: user.role,
 
       companyId: user.companyId,
 
@@ -40,7 +40,7 @@ export const createPasswordSetupToken = (user) => {
 
       email: user.email,
 
-      role: user.role.name,
+      role: user.role,
 
       type: "PASSWORD_RESET",
     },
