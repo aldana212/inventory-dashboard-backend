@@ -2,9 +2,7 @@ import prisma from "../../config/db.js";
 import * as repo from "./movement.repository.js";
 import * as repoProduct from "../product/product.repository.js";
 import * as repoCompany from "../company/company.repository.js";
-import pkg from "@prisma/client";
-
-const { Prisma } = pkg;
+import { Prisma } from "../../generated/prisma/client.js";
 
 export const getAll = async (filters) => {
   const { companyId, page, limit, search, date, type } = filters;
@@ -135,7 +133,6 @@ export const getById = async (id) => {
 };
 
 export const create = async (data) => {
-
   if (!data.companyId) throw new Error("El companyId es Requerido");
 
   if (!data.userId) throw new Error("El companyId es Requerido");
