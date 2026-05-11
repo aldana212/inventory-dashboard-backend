@@ -39,7 +39,7 @@ export const create = async ({ companyName, nit, admin }) => {
       email: admin.email,
 
       password: hashedPassword,
-
+      mustChangePassword: false,
       roleId: adminRole.id,
     },
   });
