@@ -1,0 +1,250 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+//////////////////////
+// ENUMS
+//////////////////////
+
+// Tipos de movimientos de inventario
+enum MovementType {
+  STOCK_IN // Entrada (compras, reposición)
+  STOCK_OUT // Salida (ventas, pérdidas)
+  STOCK_ADJUSTMENT // Ajuste manual
+}
+
+// Roles de usuario (control de acceso básico)
+enum UserRole {
+  ADMIN
+  SUPERVISOR
+  EMPLOYEE
+  VIEWER
+  OPERADOR
+}
+
+// Estado del usuario (reemplaza isActive)
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  TERMINATED
+}
+
+//////////////////////
+// MODELS
+//////////////////////
+
+// Empresa (multi-tenant básico)
+model Company {
+  id        Int      @id @default(autoincrement()) // Identificador único
+  name      String // Nombre de la empresa
+  nit       String   @unique // Identificación fiscal (única)
+  createdAt DateTime @default(now()) // Fecha de creación
+
+  users      User[] // Usuarios de la empresa
+  products   Product[] // Productos registrados
+  movements  Movement[] // Movimientos de inventario
+  categories Category[] // Categorías de productos
+}
+
+//////////////////////
+
+model Role {
+  id   Int    @id @default(autoincrement())
+  name String @unique // ADMIN, SUPERVISOR, OPERADOR, VIEWER
+
+  users User[]
+}
+
+// Usuario del sistema
+model User {
+  id        Int    @id @default(autoincrement()) // ID único
+  firstName String
+  lastName  String
+  // name      String // Nombre completo
+  email     String @unique // Email (login)
+  password  String // Contraseña hasheada
+
+  phone String? // opcional
+
+  roleId  Int
+  roleRel Role?      @relation(fields: [roleId], references: [id])
+  status  UserStatus @default(ACTIVE) // Estado del usuario
+
+  companyId Int // Empresa a la que pertenece
+  company   Company @relation(fields: [companyId], references: [id])
+
+  movements    Movement[] // Movimientos creados por el usuario
+  activityLogs ActivityLog[] // Registro de acciones
+
+  brandColor         String? // Preferencia visual (UI)
+  mustChangePassword Boolean   @default(true) // Forzar cambio de contraseña
+  lastLogin          DateTime? // Último inicio de sesión
+
+  createdAt DateTime @default(now()) // Fecha de creación
+  updatedAt DateTime @updatedAt // Última actualización automática
+
+  @@index([companyId]) // Optimiza consultas por empresa
+}
+
+//////////////////////
+
+// Categoría de productos (agrupación lógica)
+model Category {
+  id          Int     @id @default(autoincrement()) // ID único
+  name        String // Nombre de la categoría
+  description String? // Descripción opcional
+
+  companyId Int // Empresa dueña
+  company   Company @relation(fields: [companyId], references: [id])
+
+  isActive Boolean @default(true) // Permite desactivar sin eliminar
+  icon     String  @default("All") // Ícono UI (opcional)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[] // Productos dentro de la categoría
+
+  @@unique([companyId, name]) // Evita duplicados por empresa
+}
+
+//////////////////////
+
+// Unidad de medida (kg, unidad, litro, etc.)
+model MeasurementUnit {
+  id           Int    @id @default(autoincrement()) // ID único
+  name         String @unique // Nombre completo (Kilogramo)
+  abbreviation String @unique // Abreviación (kg)
+
+  products Product[] // Productos que usan esta unidad
+}
+
+//////////////////////
+
+// Producto del inventario
+model Product {
+  id          Int     @id @default(autoincrement()) // ID único
+  name        String // Nombre del producto
+  sku         String // Código único por empresa
+  description String? // Descripción opcional
+
+  companyId  Int // Empresa propietaria
+  categoryId Int // Categoría
+  unitId     Int // Unidad de medida
+
+  purchasePrice Decimal @db.Decimal(10, 2) // Precio de compra
+  salePrice     Decimal @db.Decimal(10, 2) // Precio de venta
+
+  currentStock Decimal @default(0) @db.Decimal(10, 2) // Stock actual (cacheado)
+  minimumStock Decimal @default(0) @db.Decimal(10, 2) // Umbral mínimo de alerta
+
+  isActive Boolean @default(true) // Permite desactivar producto
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company  Company         @relation(fields: [companyId], references: [id])
+  category Category        @relation(fields: [categoryId], references: [id])
+  unit     MeasurementUnit @relation(fields: [unitId], references: [id])
+
+  transactionDetails TransactionDetail[] // Historial tipo kardex
+  productImages      ProductImage[] // Imágenes del producto
+
+  @@unique([companyId, sku]) // SKU único dentro de la empresa
+  @@index([companyId])
+  @@index([categoryId])
+}
+
+//////////////////////
+
+// Imágenes de producto
+model ProductImage {
+  id Int @id @default(autoincrement())
+
+  productId Int // Producto al que pertenece
+  url       String // URL de la imagen
+  publicId  String? // ID en cloud storage (ej: Cloudinary)
+  position  Int // Orden de visualización
+  isPrimary Boolean @default(false) // Imagen principal
+
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, position]) // Evita posiciones duplicadas
+  @@index([productId])
+}
+
+//////////////////////
+
+// Movimiento de inventario (cabecera)
+model Movement {
+  id           Int          @id @default(autoincrement())
+  type         MovementType // Tipo de movimiento
+  movementDate DateTime     @default(now()) // Fecha efectiva
+
+  companyId Int // Empresa
+  userId    Int // Usuario que ejecuta
+
+  reference String // Referencia externa (factura, ajuste, etc.)
+  sequence  Int // Consecutivo interno por empresa
+
+  observation String? // Notas adicionales
+
+  company Company @relation(fields: [companyId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  transactionDetails TransactionDetail[] // Detalle de productos
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, reference]) // Referencia única por empresa
+  @@unique([companyId, sequence]) // Consecutivo único por empresa
+  @@index([companyId])
+  @@index([userId])
+  @@index([movementDate])
+}
+
+//////////////////////
+
+// Detalle del movimiento (kardex real)
+model TransactionDetail {
+  id         Int @id @default(autoincrement())
+  movementId Int // Movimiento padre
+  productId  Int // Producto afectado
+
+  quantity Decimal @db.Decimal(10, 2) // Cantidad movida
+
+  unitCost Decimal @db.Decimal(10, 2) // Costo en ese momento
+  unitPrice Decimal @db.Decimal(10, 2) // precio venta histórico
+
+  stockBefore Decimal @db.Decimal(10, 2) // Stock antes del movimiento
+  stockAfter  Decimal @db.Decimal(10, 2) // Stock después del movimiento
+
+  movement Movement @relation(fields: [movementId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id])
+
+  @@index([movementId])
+  @@index([productId])
+}
+
+//////////////////////
+
+// Log de actividad de usuario (auditoría básica)
+model ActivityLog {
+  id       Int      @id @default(autoincrement())
+  userId   Int // Usuario que ejecutó la acción
+  activity String // Descripción (ej: "Creó producto X")
+  date     DateTime @default(now()) // Fecha del evento
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
