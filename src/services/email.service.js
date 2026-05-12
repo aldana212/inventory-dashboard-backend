@@ -1,4 +1,5 @@
 import { transporter } from "../config/mailer.js";
+import AppError from "../errors/AppError.js";
 import { temporaryPasswordTemplate } from "../templates/emails.js";
 
 class EmailService {
