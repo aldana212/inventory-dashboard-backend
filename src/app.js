@@ -16,7 +16,11 @@ import inventoryRoutes from "./modules/inventory/inventory.routes.js";
 const app = express();
 
 app.use(morgan("dev"));
-app.use(cors());
+app.use(
+  cors({
+    origin: "*", // MVP
+  }),
+);
 app.use(express.json());
 
 /*
