@@ -20,7 +20,7 @@ export const login = async (req, res, next) => {
 export const completePasswordSetup = async (req, res, next) => {
   try {
     const id = req?.user?.id;
-
+    const { currentPassword, newPassword } = req.body;
     const data = await service.completePasswordSetup({
       id,
       currentPassword,
