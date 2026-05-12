@@ -1,15 +1,11 @@
 import nodemailer from "nodemailer";
-import dns from "dns";
-
-// FORZAR IPV4
-dns.setDefaultResultOrder("ipv4first");
 
 export const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true, // SSL
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+   secure: false, // true for 465, false for other ports
   auth: {
-    user: process.env.MAIL_USER,
-    pass: process.env.MAIL_PASS,
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
 });
