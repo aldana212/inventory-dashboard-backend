@@ -36,7 +36,7 @@ class EmailService {
     });
   }
   
-  static getErrorMessage(error) {
+  getErrorMessage(error) {
     // Gmail / Nodemailer common errors mapping
     if (error?.code === "EAUTH") {
       return "AUTH_ERROR_INVALID_CREDENTIALS";
