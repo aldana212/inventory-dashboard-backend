@@ -24,7 +24,7 @@ export const completePasswordSetup = async (req, res, next) => {
     const data = await service.completePasswordSetup({
       id,
       currentPassword,
-      newPassword,
+      newPassword
     });
 
     res.json(data);
