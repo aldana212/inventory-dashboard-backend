@@ -1,29 +1,29 @@
-import { transporter } from "../config/mailer.js";
+import { brevoClient } from "../config/mailer.js";
 import AppError from "../errors/AppError.js";
 import { temporaryPasswordTemplate } from "../templates/emails.js";
 
 class EmailService {
-  async sendMail({ to, subject, html, text }) {
+  async sendMail({ to, subject, html }) {
     try {
       if (!to) throw new AppError("EMAIL_RECIPIENT_MISSING", 404);
 
-      // Verifica conexión SMTP (IMPORTANTE en Render)
-      await transporter.verify();
-
-      console.log("MAIL_USER:", process.env.MAIL_USER);
-      console.log("MAIL_PASS exists:", !!process.env.MAIL_PASS);
-
-      const result = await transporter.sendMail({
-        from: `"Inventario App" <${process.env.MAIL_USER}>`,
-        to,
+      const result = await brevoClient.transactionalEmails.sendTransacEmail({
+        htmlContent: html,
         subject,
-        html,
-        text,
+        sender: {
+          email: process.env.MAIL_USER,
+          name: "Inventario App",
+        },
+        to: [
+          {
+            email: to,
+          },
+        ],
       });
 
       return {
         success: true,
-        messageId: result.messageId,
+        messageId: result?.messageId || null,
       };
     } catch (error) {
       throw this.handleError(error);
@@ -43,22 +43,18 @@ class EmailService {
   handleError(error) {
     console.error("EMAIL ERROR:", error);
 
-    if (error instanceof AppError) return error;
+    const status = error?.response?.statusCode;
 
-    if (error?.code === "EAUTH") {
-      return new AppError("AUTH_ERROR_INVALID_CREDENTIALS", 401);
+    if (status === 401) {
+      return new AppError("INVALID_BREVO_API_KEY", 401);
     }
 
-    if (error?.code === "ESOCKET") {
-      return new AppError("NETWORK_ERROR_CONNECTION_FAILED", 503);
+    if (status === 402) {
+      return new AppError("QUOTA_EXCEEDED", 402);
     }
 
-    if (error?.code === "ETIMEDOUT") {
-      return new AppError("SMTP_TIMEOUT_ERROR", 504);
-    }
-
-    if (error?.responseCode === 550) {
-      return new AppError("EMAIL_REJECTED_BY_PROVIDER", 400);
+    if (status === 400) {
+      return new AppError("BAD_REQUEST_EMAIL", 400);
     }
 
     return new AppError(error?.message || "UNKNOWN_EMAIL_ERROR", 500);
