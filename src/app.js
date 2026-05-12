@@ -38,6 +38,10 @@ app.use("/api/user", userRoutes);
 app.use("/api/movement", movementRoutes);
 app.use("/api/inventory", inventoryRoutes);
 
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
 // middleware de errores
 app.use(errorMiddleware);
 
