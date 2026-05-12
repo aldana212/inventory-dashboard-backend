@@ -61,6 +61,10 @@ export const create = async ({
 
   const hashed = await bcrypt.hash(tempPassword, 10);
 
+  // SEND EMAIL FIRST
+  await emailService.sendTemporaryPassword(email, tempPassword);
+
+  // ONLY save if email worked
   const data = {
     firstName,
     lastName,
@@ -76,8 +80,6 @@ export const create = async ({
 
   //saving the user
   const newUser = await repo.create(data);
-
-  await emailService.sendTemporaryPassword(email, tempPassword);
 
   return newUser;
 };
