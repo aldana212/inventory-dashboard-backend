@@ -10,6 +10,9 @@ class EmailService {
       // Verifica conexión SMTP (IMPORTANTE en Render)
       await transporter.verify();
 
+      console.log("MAIL_USER:", process.env.MAIL_USER);
+      console.log("MAIL_PASS exists:", !!process.env.MAIL_PASS);
+
       const result = await transporter.sendMail({
         from: `"Inventario App" <${process.env.MAIL_USER}>`,
         to,
@@ -29,9 +32,6 @@ class EmailService {
 
   async sendTemporaryPassword(to, password) {
     const html = temporaryPasswordTemplate(to, password);
-
-    console.log("MAIL_USER:", process.env.MAIL_USER);
-    console.log("MAIL_PASS exists:", !!process.env.MAIL_PASS);
 
     return this.sendMail({
       to,
