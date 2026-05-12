@@ -1,11 +1,9 @@
 import z from "zod";
+import { passwordSchema } from "../../../shared/schemas/password.schema.js";
 
 export const changePasswordSchema = z.object({
   body: z.object({
     currentPassword: z.string(),
-    newPassword: z
-      .string()
-      .min(8, { message: "Password must be at least 8 characters long" })
-      .max(20, { message: "Password cannot exceed 20 characters" }),
+     newPassword: passwordSchema,
   }),
 });

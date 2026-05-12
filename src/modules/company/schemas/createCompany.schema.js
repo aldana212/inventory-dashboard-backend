@@ -1,4 +1,5 @@
 import z from "zod";
+import { passwordSchema } from "../../../shared/schemas/password.schema.js";
 
 export const createCompanySchema = z.object({
   body: z.object({
@@ -8,7 +9,7 @@ export const createCompanySchema = z.object({
       firstName: z.string().min(2),
       lastName: z.string().min(2),
       email: z.email(),
-      password: z.string().min(8),
+       password: passwordSchema,
     }),
   }),
 });
