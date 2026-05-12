@@ -19,10 +19,7 @@ class EmailService {
         messageId: result.messageId,
       };
     } catch (error) {
-      return {
-        success: false,
-        error: this.getErrorMessage(error),
-      };
+      throw this.handleError(error);
     }
   }
 
@@ -35,26 +32,30 @@ class EmailService {
       html,
     });
   }
-  
-  getErrorMessage(error) {
-    // Gmail / Nodemailer common errors mapping
+
+  handleError(error) {
+    // Si ya es AppError, lo dejamos pasar
+    if (error instanceof AppError) {
+      return error;
+    }
+
     if (error?.code === "EAUTH") {
-      return "AUTH_ERROR_INVALID_CREDENTIALS";
+      return new AppError("AUTH_ERROR_INVALID_CREDENTIALS", 401);
     }
 
     if (error?.code === "ESOCKET") {
-      return "NETWORK_ERROR_CONNECTION_FAILED";
+      return new AppError("NETWORK_ERROR_CONNECTION_FAILED", 503);
     }
 
     if (error?.responseCode === 550) {
-      return "EMAIL_REJECTED_BY_PROVIDER";
+      return new AppError("EMAIL_REJECTED_BY_PROVIDER", 400);
     }
 
     if (error?.message?.includes("self email")) {
-      return "TEST_MODE_ONLY_SELF_EMAIL_ALLOWED";
+      return new AppError("TEST_MODE_ONLY_SELF_EMAIL_ALLOWED", 403);
     }
 
-    return error?.message || "UNKNOWN_EMAIL_ERROR";
+    return new AppError("UNKNOWN_EMAIL_ERROR", 500);
   }
 }
 

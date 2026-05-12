@@ -56,6 +56,7 @@ export const create = async (req, res, next) => {
     });
     res.json(data);
   } catch (error) {
+    console.log("error");
     console.log(error);
     next(error);
   }
